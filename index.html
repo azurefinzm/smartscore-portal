@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#2E4228">
+<title>SmartScore · Vocado Intelligence</title>
+<style>
+:root{
+  --voc-primary:#4A6741;--voc-dark:#2E4228;--voc-mid:#5E7F52;
+  --voc-light:#8FA882;--voc-pale:#EEF3EC;--voc-bg:#F4F7F2;
+  --text-primary:#1a2b18;--text-secondary:#6b7c68;--text-tertiary:#8fa882;
+  --border:#d4ddd1;--border-light:#e8ede6;--white:#ffffff;
+  --radius-card:16px;--radius-input:10px;--radius-btn:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;background:var(--voc-bg);color:var(--text-primary)}
+
+.screen{display:none}
+.screen.active{display:block}
+
+/* LOGIN */
+#login-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1.25rem;background:var(--voc-bg)}
+.login-brand{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.brand-icon{width:54px;height:54px;border-radius:14px;background:var(--voc-dark);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.brand-text-top{font-size:10px;font-weight:700;letter-spacing:1.8px;color:var(--voc-light);text-transform:uppercase}
+.brand-text-main{font-size:24px;font-weight:800;color:var(--text-primary);letter-spacing:-0.8px;line-height:1.1}
+.login-tagline{font-size:14px;color:var(--text-secondary);text-align:center;margin-bottom:2rem}
+.login-card{width:100%;max-width:380px;background:var(--white);border:0.5px solid var(--border);border-radius:20px;padding:2rem}
+.login-title{font-size:18px;font-weight:700;color:var(--text-primary);letter-spacing:-0.3px;margin-bottom:1.5rem}
+.field-label{font-size:11px;font-weight:700;color:var(--text-secondary);display:block;margin-bottom:6px;letter-spacing:0.5px;text-transform:uppercase}
+.field-input{width:100%;padding:13px 14px;border-radius:var(--radius-input);border:0.5px solid var(--border);font-size:16px;font-family:inherit;background:#f8fbf7;color:var(--text-primary);outline:none;margin-bottom:14px;transition:border-color .2s;-webkit-appearance:none}
+.field-input:focus{border-color:var(--voc-primary);background:white}
+.btn-primary{width:100%;padding:15px;border-radius:var(--radius-btn);background:var(--voc-primary);color:white;border:none;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;letter-spacing:-0.2px;transition:background .15s,opacity .15s}
+.btn-primary:active{opacity:0.8}
+.btn-primary:disabled{opacity:0.6;cursor:not-allowed}
+.login-footer{margin-top:1.5rem;display:flex;align-items:center;gap:6px;opacity:0.65}
+.login-footer span{font-size:11px;color:var(--voc-primary);font-weight:600;letter-spacing:0.2px}
+.error-msg{background:#fff3f3;border:0.5px solid #ffcccc;border-radius:8px;padding:10px 14px;font-size:13px;color:#c62828;margin-bottom:14px;display:none}
+.error-msg.show{display:block}
+
+/* APP */
+#app-screen{display:none;flex-direction:column;min-height:100vh}
+#app-screen.active{display:flex}
+.app-header{background:var(--voc-dark);padding:14px 20px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.header-brand{display:flex;align-items:center;gap:10px}
+.header-icon{width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center}
+.header-brand-text-top{font-size:9px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,0.55);text-transform:uppercase}
+.header-brand-text-main{font-size:16px;font-weight:800;color:white;letter-spacing:-0.4px;line-height:1.1}
+.header-user{display:flex;align-items:center;gap:10px}
+.header-user-info{text-align:right}
+.header-user-name{font-size:13px;font-weight:600;color:white}
+.header-user-nrc{font-size:11px;color:rgba(255,255,255,0.55)}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--voc-mid);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white;flex-shrink:0}
+
+/* TABS */
+.tab-nav{background:var(--white);border-bottom:0.5px solid var(--border);display:flex;padding:0 20px;flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.tab-nav::-webkit-scrollbar{display:none}
+.tab-btn{padding:13px 14px;border:none;background:none;cursor:pointer;font-size:14px;font-family:inherit;border-bottom:2px solid transparent;margin-bottom:-0.5px;color:var(--text-secondary);font-weight:500;white-space:nowrap;transition:color .15s}
+.tab-btn.active{color:var(--voc-primary);border-bottom-color:var(--voc-primary);font-weight:700}
+
+.tab-content{flex:1;overflow-y:auto;padding:16px 20px}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* CARDS */
+.card{background:var(--white);border-radius:var(--radius-card);border:0.5px solid var(--border);padding:20px;margin-bottom:12px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.stat-card{background:var(--white);border-radius:12px;border:0.5px solid var(--border);padding:14px}
+.stat-label{font-size:11px;color:var(--text-tertiary);margin-bottom:4px;font-weight:500}
+.stat-val{font-size:19px;font-weight:700;color:var(--text-primary);letter-spacing:-0.5px}
+
+/* GAUGE */
+.gauge-wrap{display:flex;justify-content:center;margin-bottom:1.25rem;position:relative}
+.gauge-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;width:130px}
+.gauge-score{font-size:52px;font-weight:800;line-height:1;letter-spacing:-3px}
+.gauge-max{font-size:11px;color:var(--text-tertiary);margin-top:3px;font-weight:500}
+.gauge-band{font-size:14px;font-weight:700;margin-top:8px;letter-spacing:-0.2px}
+.score-scale{display:flex;justify-content:space-between;font-size:10px;color:var(--text-tertiary);padding:0 6px;margin-bottom:1.5rem}
+.comp-section-title{font-size:11px;font-weight:700;color:var(--text-tertiary);margin-bottom:13px;letter-spacing:0.5px;text-transform:uppercase}
+.comp-row{margin-bottom:13px}
+.comp-row-header{display:flex;justify-content:space-between;margin-bottom:5px}
+.comp-name{font-size:13px;color:var(--text-secondary);font-weight:500}
+.comp-val{font-size:13px;font-weight:700;color:var(--text-primary)}
+.comp-val-max{font-weight:400;color:var(--text-tertiary)}
+.comp-track{height:5px;background:var(--border-light);border-radius:3px;overflow:hidden}
+.comp-fill{height:100%;border-radius:3px;transition:width 1.8s cubic-bezier(.4,0,.2,1)}
+
+/* ACCOUNT */
+.acc-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+.acc-ref{font-size:16px;font-weight:800;color:var(--text-primary);letter-spacing:-0.4px}
+.acc-lender{font-size:13px;color:var(--text-secondary);margin-top:3px}
+.badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px}
+.badge-active{background:var(--voc-pale);color:var(--voc-primary)}
+.badge-npl{background:#ffebee;color:#c62828}
+.badge-closed{background:#f5f5f5;color:#666}
+.acc-details{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.acc-detail-label{font-size:11px;color:var(--text-tertiary);margin-bottom:2px;font-weight:500}
+.acc-detail-val{font-size:13px;font-weight:600;color:var(--text-primary)}
+.prog-track{height:5px;background:var(--border-light);border-radius:3px;margin-top:16px}
+.prog-fill{height:100%;border-radius:3px;background:var(--voc-primary);transition:width 1s ease-out}
+.prog-labels{display:flex;justify-content:space-between;margin-top:6px}
+.prog-label{font-size:11px;color:var(--text-tertiary);font-weight:500}
+
+/* REPAYMENTS */
+.rep-header-row{padding:14px 16px;border-bottom:0.5px solid var(--border-light);display:flex;justify-content:space-between;align-items:center}
+.rep-row{padding:14px 16px;border-bottom:0.5px solid var(--border-light);display:flex;justify-content:space-between;align-items:center}
+.rep-row:last-child{border-bottom:none}
+.rep-amount{font-size:14px;font-weight:600;color:var(--text-primary)}
+.rep-date{font-size:12px;color:var(--text-tertiary);margin-top:2px}
+.rep-status-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px}
+.rep-paid-date{font-size:11px;color:var(--text-tertiary);margin-top:4px;text-align:right}
+.rep-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* DISPUTES */
+select.field-input{-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7c68' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+textarea.field-input{resize:vertical;min-height:100px}
+.success-card{background:var(--voc-pale);border:0.5px solid var(--voc-light);border-radius:12px;padding:16px;text-align:center;display:none;margin-bottom:16px}
+.success-card.show{display:block}
+.success-title{font-size:15px;font-weight:700;color:var(--voc-dark);margin-bottom:4px}
+.success-msg{font-size:13px;color:var(--voc-primary)}
+
+/* WARNING */
+.warning-card{border-radius:12px;border:0.5px solid;padding:12px 14px;margin-bottom:10px;display:flex;gap:10px}
+.warning-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.warning-type{font-size:12px;font-weight:700;margin-bottom:3px;text-transform:capitalize}
+.warning-msg{font-size:13px}
+
+/* CONSENT */
+.consent-row{padding:13px 16px;border-bottom:0.5px solid var(--border-light);display:flex;justify-content:space-between;align-items:center}
+.consent-row:last-child{border-bottom:none}
+
+/* LOADING */
+.loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1rem;gap:12px}
+.spinner{width:28px;height:28px;border:2.5px solid var(--border-light);border-top-color:var(--voc-primary);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:14px;color:var(--text-secondary)}
+
+/* POWERED BY */
+.powered-bar{background:var(--voc-pale);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.powered-text{font-size:12px;color:var(--voc-primary);font-weight:500}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:3rem 1rem}
+.empty-state-title{font-size:16px;font-weight:600;color:var(--text-primary);margin-bottom:6px}
+.empty-state-msg{font-size:14px;color:var(--text-secondary)}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen" class="screen active">
+  <div class="login-brand">
+    <div class="brand-icon">
+      <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+        <path d="M5 25 C5 25 10 16 17 11 C21 8 26 7 26 7 C26 7 25 11 22 15 C18 19 11 22 5 25Z" fill="white" opacity="0.9"/>
+        <path d="M5 25 C9 21 14 17 20 13" stroke="white" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.55"/>
+      </svg>
+    </div>
+    <div>
+      <div class="brand-text-top">Vocado Intelligence</div>
+      <div class="brand-text-main">SmartScore</div>
+    </div>
+  </div>
+  <div class="login-tagline">Your personal credit intelligence portal</div>
+  <div class="login-card">
+    <div class="login-title">Sign In</div>
+    <div class="error-msg" id="login-error"></div>
+    <label class="field-label" for="inp-nrc">NRC Number</label>
+    <input class="field-input" id="inp-nrc" type="text" placeholder="123456/78/9" autocomplete="username" inputmode="text"/>
+    <label class="field-label" for="inp-pin">PIN</label>
+    <input class="field-input" id="inp-pin" type="password" placeholder="••••••" autocomplete="current-password" inputmode="numeric"/>
+    <button class="btn-primary" id="login-btn" onclick="handleLogin()">Sign In</button>
+    <div style="text-align:center;margin-top:14px">
+      <span style="font-size:14px;color:var(--voc-primary);cursor:pointer;font-weight:500">Forgot PIN?</span>
+    </div>
+  </div>
+  <div class="login-footer">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+      <path d="M3 21 C3 21 9 13 15 9 C19 6 23 5 23 5 C23 5 22 9 19 13 C15 17 9 19 3 21Z" fill="#4A6741"/>
+    </svg>
+    <span>Vocado Intelligence · Zambia DPA No. 3 of 2021</span>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen" class="screen">
+  <div class="app-header">
+    <div class="header-brand">
+      <div class="header-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M3 21 C3 21 8 14 14 10 C18 7 22 6 22 6 C22 6 21 10 18 14 C14 18 8 20 3 21Z" fill="white" opacity="0.9"/>
+          <path d="M3 21 C7 17 12 13 18 10" stroke="white" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.5"/>
+        </svg>
+      </div>
+      <div>
+        <div class="header-brand-text-top">Vocado Intelligence</div>
+        <div class="header-brand-text-main">SmartScore</div>
+      </div>
+    </div>
+    <div class="header-user">
+      <div class="header-user-info">
+        <div class="header-user-name" id="hdr-name">—</div>
+        <div class="header-user-nrc" id="hdr-nrc">—</div>
+      </div>
+      <div class="avatar" id="hdr-avatar">—</div>
+    </div>
+  </div>
+
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('overview')">Overview</button>
+    <button class="tab-btn" onclick="switchTab('accounts')">Accounts</button>
+    <button class="tab-btn" onclick="switchTab('repayments')">Repayments</button>
+    <button class="tab-btn" onclick="switchTab('disputes')">Disputes</button>
+    <button class="tab-btn" onclick="switchTab('enquiries')">Who Viewed Me</button>
+  </div>
+
+  <div class="tab-content">
+    <div class="tab-panel active" id="panel-overview"><div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading your score...</div></div></div>
+    <div class="tab-panel" id="panel-accounts"><div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading accounts...</div></div></div>
+    <div class="tab-panel" id="panel-repayments"><div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading repayments...</div></div></div>
+    <div class="tab-panel" id="panel-disputes"><div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading...</div></div></div>
+    <div class="tab-panel" id="panel-enquiries"><div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading activity...</div></div></div>
+  </div>
+</div>
+
+<script>
+const API='https://smartscore-api.azurewebsites.net/api/v1';
+const DEMO_USER='admin',DEMO_PASS='SmartAdmin@2025';
+const R=80,C=2*Math.PI*R,ARC=C*0.75;
+
+let STATE={token:null,consumer:null,dashboard:null,accounts:[],repayments:[],animScore:0,animTimer:null,activeTab:'overview'};
+
+const $=id=>document.getElementById(id);
+const zmw=n=>`ZMW ${Number(n||0).toLocaleString('en-ZM',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+const fmtDate=d=>d?new Date(d).toLocaleDateString('en-ZM',{day:'numeric',month:'short',year:'numeric'}):'—';
+const fmtDateShort=d=>d?new Date(d).toLocaleDateString('en-ZM',{day:'numeric',month:'short'}):'—';
+const scoreArcLen=s=>Math.min(s/850,1)*ARC;
+
+const BAND_COLOR={Excellent:'#2e7d32',Good:'#4A6741',Fair:'#e65100',Poor:'#c62828','Very Poor':'#b71c1c'};
+const compColor=v=>v>=80?'#2e7d32':v>=60?'#4A6741':v>=40?'#e65100':'#c62828';
+const COMP_NAMES={payment:'Payment',utilisation:'Utilisation',stability:'Stability',enquiry:'Enquiry',diversity:'Diversity'};
+
+const leafSVG=(sz=18,col='white')=>`<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none"><path d="M3 21 C3 21 8 14 14 10 C18 7 22 6 22 6 C22 6 21 10 18 14 C14 18 8 20 3 21Z" fill="${col}" opacity="0.9"/><path d="M3 21 C7 17 12 13 18 10" stroke="${col}" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.5"/></svg>`;
+
+async function apiFetch(path,opts={}){
+  const h={'Content-Type':'application/json'};
+  if(STATE.token)h['Authorization']=`Bearer ${STATE.token}`;
+  const r=await fetch(`${API}${path}`,{...opts,headers:{...h,...(opts.headers||{})}});
+  if(!r.ok)throw new Error(`${r.status}`);
+  return r.json();
+}
+
+async function handleLogin(){
+  const nrc=$('inp-nrc').value.trim();
+  const pin=$('inp-pin').value.trim();
+  const btn=$('login-btn');
+  const errEl=$('login-error');
+  errEl.classList.remove('show');
+  if(!nrc){showErr('Please enter your NRC number.');return;}
+  if(pin.length<4){showErr('PIN must be at least 4 digits.');return;}
+  btn.textContent='Signing in...';btn.disabled=true;
+  try{
+    const loginRes=await fetch(`${API}/auth/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:DEMO_USER,password:DEMO_PASS})});
+    if(!loginRes.ok)throw new Error('auth');
+    STATE.token=(await loginRes.json()).token;
+    const cRes=await apiFetch(`/consumers/nrc/${encodeURIComponent(nrc)}`);
+    if(!cRes.success||!cRes.data)throw new Error('not_found');
+    STATE.consumer=cRes.data;
+    const init=`${STATE.consumer.first_name[0]}${STATE.consumer.last_name[0]}`;
+    $('hdr-name').textContent=`${STATE.consumer.first_name} ${STATE.consumer.last_name}`;
+    $('hdr-nrc').textContent=STATE.consumer.nrc_number;
+    $('hdr-avatar').textContent=init;
+    $('login-screen').classList.remove('active');
+    $('login-screen').style.display='none';
+    $('app-screen').style.display='flex';
+    $('app-screen').classList.add('active');
+    await loadAll();
+  }catch(e){
+    const msg=e.message==='not_found'?'NRC not found. Please check and try again.':'Connection error. Please try again.';
+    showErr(msg);btn.textContent='Sign In';btn.disabled=false;
+  }
+}
+
+function showErr(msg){const el=$('login-error');el.textContent=msg;el.classList.add('show');}
+
+async function loadAll(){
+  const id=STATE.consumer.consumer_id;
+  try{
+    const[dRes,aRes,rRes]=await Promise.all([
+      apiFetch(`/consumers/${id}/dashboard`),
+      apiFetch(`/consumers/${id}/accounts`),
+      apiFetch(`/consumers/${id}/repayments?months=24`),
+    ]);
+    STATE.dashboard=dRes.data;
+    STATE.accounts=aRes.data||[];
+    STATE.repayments=rRes.data||[];
+  }catch(e){console.error('Load error',e);}
+  renderOverview();renderAccounts();renderRepayments();renderDisputes();renderEnquiries();
+}
+
+function switchTab(tab){
+  STATE.activeTab=tab;
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
+    b.classList.toggle('active',['overview','accounts','repayments','disputes','enquiries'][i]===tab);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  $(`panel-${tab}`).classList.add('active');
+  if(tab==='overview')animScore(STATE.dashboard?.score?.smartscore||0);
+}
+
+function animScore(target){
+  if(STATE.animTimer)clearInterval(STATE.animTimer);
+  STATE.animScore=0;
+  const inc=target/70;
+  STATE.animTimer=setInterval(()=>{
+    STATE.animScore=Math.min(STATE.animScore+inc,target);
+    const el=$('gauge-score-num');
+    if(el)el.textContent=Math.round(STATE.animScore);
+    const arc=$('gauge-arc');
+    if(arc){const l=scoreArcLen(STATE.animScore);arc.setAttribute('stroke-dasharray',`${l.toFixed(2)} ${(C-l).toFixed(2)}`);}
+    if(STATE.animScore>=target)clearInterval(STATE.animTimer);
+  },16);
+}
+
+function renderOverview(){
+  if(!STATE.dashboard){$('panel-overview').innerHTML='<div class="empty-state"><div class="empty-state-title">No data available</div></div>';return;}
+  const{score,summary,activeWarnings=[]}=STATE.dashboard;
+  const band=score?.scoreBand||'Fair';
+  const col=BAND_COLOR[band]||'#4A6741';
+  const ss=score?.smartscore||0;
+  const comps=score?.components||{};
+  const wColors={critical:{bg:'#fff0f0',bc:'#ffcccc',dot:'#c62828',tc:'#c62828'},high:{bg:'#fff5f0',bc:'#ffd0b3',dot:'#e65100',tc:'#e65100'},medium:{bg:'#fffbf0',bc:'#ffe0b2',dot:'#f57c00',tc:'#f57c00'},low:{bg:'#f0f5ff',bc:'#b3c8ff',dot:'#1565c0',tc:'#1565c0'}};
+
+  $('panel-overview').innerHTML=`
+  <div class="card" style="text-align:center">
+    <div style="font-size:12px;color:var(--text-tertiary);font-weight:700;margin-bottom:1.25rem;letter-spacing:0.5px;text-transform:uppercase">Your SmartScore</div>
+    <div class="gauge-wrap">
+      <svg width="200" height="200" style="transform:rotate(135deg)">
+        <circle cx="100" cy="100" r="${R}" fill="none" stroke="var(--border-light)" stroke-width="11" stroke-dasharray="${ARC.toFixed(2)} ${(C-ARC).toFixed(2)}" stroke-linecap="round"/>
+        <circle id="gauge-arc" cx="100" cy="100" r="${R}" fill="none" stroke="${col}" stroke-width="11" stroke-dasharray="0 ${C.toFixed(2)}" stroke-linecap="round"/>
+      </svg>
+      <div class="gauge-center">
+        <div class="gauge-score" id="gauge-score-num" style="color:${col}">0</div>
+        <div class="gauge-max">out of 850</div>
+        <div class="gauge-band" style="color:${col}">${band}</div>
+      </div>
+    </div>
+    <div class="score-scale"><span>0</span><span>Very Poor</span><span>Poor</span><span>Fair</span><span>Good</span><span>Excellent</span><span>850</span></div>
+    <div style="border-top:0.5px solid var(--border-light);padding-top:16px;text-align:left">
+      <div class="comp-section-title">Score breakdown</div>
+      ${Object.entries(comps).map(([k,v])=>`
+      <div class="comp-row">
+        <div class="comp-row-header"><span class="comp-name">${COMP_NAMES[k]||k}</span><span class="comp-val">${v}<span class="comp-val-max">/100</span></span></div>
+        <div class="comp-track"><div class="comp-fill" style="width:${v}%;background:${compColor(v)}"></div></div>
+      </div>`).join('')}
+    </div>
+  </div>
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-label">Total accounts</div><div class="stat-val">${summary?.total_accounts||0}</div></div>
+    <div class="stat-card"><div class="stat-label">Active accounts</div><div class="stat-val">${summary?.active_accounts||0}</div></div>
+    <div class="stat-card"><div class="stat-label">Outstanding</div><div style="font-size:14px;font-weight:700;color:var(--text-primary);margin-top:2px">${zmw(summary?.total_outstanding_zmw)}</div></div>
+    <div class="stat-card"><div class="stat-label">Arrears</div><div style="font-size:14px;font-weight:700;color:${(summary?.total_arrears_zmw||0)>0?'#c62828':'var(--text-primary)'};margin-top:2px">${zmw(summary?.total_arrears_zmw)}</div></div>
+  </div>
+  <div style="background:white;border-radius:12px;border:0.5px solid var(--border);padding:13px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:13px;color:var(--text-secondary)">Score calculated</span>
+    <span style="font-size:13px;font-weight:600;color:var(--text-primary)">${fmtDate(score?.calculatedAt)}</span>
+  </div>
+  <div style="background:white;border-radius:12px;border:0.5px solid var(--border);padding:13px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:13px;color:var(--text-secondary)">Valid until</span>
+    <span style="font-size:13px;font-weight:600;color:var(--text-primary)">${fmtDate(score?.validUntil)}</span>
+  </div>
+  ${activeWarnings.length?`
+  <div style="font-size:12px;font-weight:700;color:var(--text-tertiary);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:10px">Active alerts</div>
+  ${activeWarnings.map(w=>{const wb=wColors[w.severity]||wColors.low;return`
+  <div class="warning-card" style="background:${wb.bg};border-color:${wb.bc}">
+    <div class="warning-dot" style="background:${wb.dot}"></div>
+    <div><div class="warning-type" style="color:${wb.tc}">${w.warning_type.replace(/_/g,' ')}</div><div class="warning-msg" style="color:var(--text-secondary)">${w.warning_message}</div></div>
+  </div>`}).join('')}`:''}
+  <div class="powered-bar">${leafSVG(16,'#4A6741')}<span class="powered-text">Score refreshes every 24 hours · Powered by Vocado Intelligence</span></div>`;
+
+  animScore(ss);
+}
+
+function renderAccounts(){
+  if(!STATE.accounts.length){$('panel-accounts').innerHTML=`<div class="empty-state"><div class="empty-state-title">No accounts found</div><div class="empty-state-msg">No credit accounts have been reported for your NRC.</div></div>`;return;}
+  $('panel-accounts').innerHTML=STATE.accounts.map(a=>{
+    const pct=a.original_principal>0?Math.round(((a.original_principal-a.outstanding_balance)/a.original_principal)*100):0;
+    const bClass=a.is_npl?'badge-npl':a.account_status==='active'?'badge-active':'badge-closed';
+    return`<div class="card">
+      <div class="acc-header"><div><div class="acc-ref">${a.account_reference}</div><div class="acc-lender">${a.lender_name}</div></div><span class="badge ${bClass}">${a.is_npl?'NPL':a.account_status}</span></div>
+      <div class="acc-details">
+        <div><div class="acc-detail-label">Product</div><div class="acc-detail-val">${(a.product_type_code||'').replace(/_/g,' ')}</div></div>
+        <div><div class="acc-detail-label">Interest p.a.</div><div class="acc-detail-val">${a.interest_rate_pa||'—'}%</div></div>
+        <div><div class="acc-detail-label">Original principal</div><div class="acc-detail-val">${zmw(a.original_principal)}</div></div>
+        <div><div class="acc-detail-label">Outstanding</div><div class="acc-detail-val">${zmw(a.outstanding_balance)}</div></div>
+        <div><div class="acc-detail-label">Arrears</div><div class="acc-detail-val" style="color:${a.arrears_amount>0?'#c62828':'inherit'}">${zmw(a.arrears_amount)}</div></div>
+        <div><div class="acc-detail-label">Term</div><div class="acc-detail-val">${a.term_months||'—'} months</div></div>
+        <div><div class="acc-detail-label">Disbursed</div><div class="acc-detail-val">${fmtDate(a.disbursement_date)}</div></div>
+        <div><div class="acc-detail-label">Matures</div><div class="acc-detail-val">${fmtDate(a.maturity_date)}</div></div>
+      </div>
+      <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div>
+      <div class="prog-labels"><span class="prog-label">Repaid ${pct}%</span><span class="prog-label">${100-pct}% remaining</span></div>
+    </div>`;
+  }).join('');
+}
+
+function renderRepayments(){
+  if(!STATE.repayments.length){$('panel-repayments').innerHTML=`<div class="empty-state"><div class="empty-state-title">No repayment history</div><div class="empty-state-msg">Repayment records will appear here once submitted by your lender.</div></div>`;return;}
+  const onT=STATE.repayments.filter(r=>r.payment_status==='paid_on_time').length;
+  const lt=STATE.repayments.filter(r=>r.payment_status==='paid_late').length;
+  const ms=STATE.repayments.filter(r=>r.payment_status==='missed').length;
+  const smap={paid_on_time:{l:'On time',c:'#2e7d32',bg:'#eef3ec',d:'#2e7d32'},paid_late:{l:'Late',c:'#e65100',bg:'#fff3e0',d:'#e65100'},missed:{l:'Missed',c:'#c62828',bg:'#ffebee',d:'#c62828'},pending:{l:'Pending',c:'#6b7c68',bg:'#f5f5f5',d:'#8fa882'},partial:{l:'Partial',c:'#f57c00',bg:'#fff8e1',d:'#f57c00'}};
+  $('panel-repayments').innerHTML=`
+  <div style="display:flex;gap:10px;margin-bottom:12px">
+    <div class="stat-card" style="flex:1;text-align:center"><div class="stat-label">On time</div><div class="stat-val" style="color:#2e7d32">${onT}</div></div>
+    <div class="stat-card" style="flex:1;text-align:center"><div class="stat-label">Late</div><div class="stat-val" style="color:#e65100">${lt}</div></div>
+    <div class="stat-card" style="flex:1;text-align:center"><div class="stat-label">Missed</div><div class="stat-val" style="color:#c62828">${ms}</div></div>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="rep-header-row"><div style="font-size:11px;font-weight:700;color:var(--text-tertiary);letter-spacing:0.5px;text-transform:uppercase">Payment history · 24 months</div></div>
+    ${STATE.repayments.map(r=>{const s=smap[r.payment_status]||smap.pending;return`
+    <div class="rep-row">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="rep-dot" style="background:${s.d}"></div>
+        <div><div class="rep-amount">${zmw(r.due_amount)}</div><div class="rep-date">Due ${fmtDateShort(r.due_date)}${r.lender_name?` · ${r.lender_name}`:''}</div></div>
+      </div>
+      <div style="text-align:right">
+        <span class="rep-status-badge" style="background:${s.bg};color:${s.c}">${s.l}</span>
+        ${r.paid_date?`<div class="rep-paid-date">Paid ${fmtDateShort(r.paid_date)}</div>`:''}
+      </div>
+    </div>`}).join('')}
+  </div>`;
+}
+
+function renderDisputes(){
+  $('panel-disputes').innerHTML=`
+  <div class="card">
+    <div style="font-size:16px;font-weight:700;color:var(--text-primary);margin-bottom:6px;letter-spacing:-0.3px">Raise a Dispute</div>
+    <div style="font-size:13px;color:var(--text-secondary);margin-bottom:1.25rem">Challenge an incorrect entry on your credit record. Resolved within 30 days per BOZ regulations.</div>
+    <div class="success-card" id="dispute-success">
+      <div class="success-title">Dispute submitted</div>
+      <div class="success-msg">Your dispute has been logged and will be resolved within 30 days.</div>
+    </div>
+    <label class="field-label" for="d-account">Account (optional)</label>
+    <select class="field-input" id="d-account">
+      <option value="">Select account...</option>
+      ${STATE.accounts.map(a=>`<option value="${a.account_id}">${a.account_reference} — ${a.lender_name}</option>`).join('')}
+    </select>
+    <label class="field-label" for="d-type">Dispute type</label>
+    <select class="field-input" id="d-type">
+      <option value="incorrect_balance">Incorrect balance</option>
+      <option value="account_not_mine">Account not mine</option>
+      <option value="incorrect_status">Incorrect account status</option>
+      <option value="incorrect_payment_record">Incorrect payment record</option>
+      <option value="identity_theft">Identity theft</option>
+      <option value="other">Other</option>
+    </select>
+    <label class="field-label" for="d-desc">Description</label>
+    <textarea class="field-input" id="d-desc" placeholder="Describe the issue in detail..."></textarea>
+    <button class="btn-primary" id="d-btn" onclick="submitDispute()" style="margin-top:6px">Submit Dispute</button>
+  </div>`;
+}
+
+async function submitDispute(){
+  const accId=$('d-account').value;
+  const dtype=$('d-type').value;
+  const desc=$('d-desc').value.trim();
+  const btn=$('d-btn');
+  if(!desc){alert('Please describe the issue.');return;}
+  btn.textContent='Submitting...';btn.disabled=true;
+  try{
+    await apiFetch(`/consumers/${STATE.consumer.consumer_id}/disputes`,{method:'POST',body:JSON.stringify({account_id:accId?parseInt(accId):null,dispute_type:dtype,description:desc})});
+    $('dispute-success').classList.add('show');
+    $('d-desc').value='';
+  }catch(e){alert('Failed to submit. Please try again.');}
+  btn.textContent='Submit Dispute';btn.disabled=false;
+}
+
+async function renderEnquiries(){
+  try{
+    const res=await apiFetch(`/consumers/${STATE.consumer.consumer_id}/warnings`);
+    const warnings=res.data||[];
+    if(!warnings.length){
+      $('panel-enquiries').innerHTML=`
+      <div class="card" style="text-align:center;padding:2.5rem 1rem">
+        ${leafSVG(36,'#4A6741')}
+        <div style="font-size:16px;font-weight:700;color:var(--text-primary);margin-top:14px">All clear</div>
+        <div style="font-size:14px;color:var(--text-secondary);margin-top:6px">No alerts on your credit record.</div>
+      </div>
+      <div class="powered-bar">${leafSVG(16,'#4A6741')}<span class="powered-text">You have the right to know who accesses your data · Zambia DPA No. 3 of 2021</span></div>`;
+      return;
+    }
+    const sCol={critical:'#c62828',high:'#e65100',medium:'#f57c00',low:'#1565c0'};
+    const sBg={critical:'#ffebee',high:'#fff3e0',medium:'#fff8e1',low:'#f0f5ff'};
+    $('panel-enquiries').innerHTML=`
+    <div style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">Under the Zambia Data Protection Act, you have the right to see all activity on your credit record.</div>
+    <div class="card" style="padding:0;overflow:hidden">
+      ${warnings.map(w=>`
+      <div class="consent-row">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--text-primary)">${(w.warning_type||'').replace(/_/g,' ')}</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:2px">${fmtDate(w.triggered_at)}</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:2px">${w.warning_message||''}</div>
+        </div>
+        <span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:${sBg[w.severity]||sBg.low};color:${sCol[w.severity]||sCol.low};flex-shrink:0;margin-left:10px">${w.severity}</span>
+      </div>`).join('')}
+    </div>
+    <div class="powered-bar">${leafSVG(16,'#4A6741')}<span class="powered-text">Your data is protected · Vocado Intelligence · Zambia DPA No. 3 of 2021</span></div>`;
+  }catch(e){$('panel-enquiries').innerHTML=`<div class="empty-state"><div class="empty-state-title">Unable to load</div><div class="empty-state-msg">Please try again later.</div></div>`;}
+}
+
+// Enter key handlers
+document.getElementById('inp-pin').addEventListener('keydown',e=>{if(e.key==='Enter')handleLogin();});
+document.getElementById('inp-nrc').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('inp-pin').focus();});
+</script>
+</body>
+</html>
