@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#2E4228">
+<title>CRI Lender Portal · Vocado Intelligence</title>
+<style>
+:root{
+  --voc-primary:#4A6741;--voc-dark:#2E4228;--voc-mid:#5E7F52;
+  --voc-light:#8FA882;--voc-pale:#EEF3EC;--voc-bg:#F4F7F2;
+  --text-primary:#1a2b18;--text-secondary:#6b7c68;--text-tertiary:#8fa882;
+  --border:#d4ddd1;--border-light:#e8ede6;--white:#ffffff;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;background:var(--voc-bg);color:var(--text-primary)}
+.screen{display:none}.screen.active{display:block}
+#login-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1.25rem;background:var(--voc-bg)}
+.login-card{width:100%;max-width:380px;background:var(--white);border:0.5px solid var(--border);border-radius:20px;padding:2rem;margin-top:1.5rem}
+.field-label{font-size:11px;font-weight:700;color:var(--text-secondary);display:block;margin-bottom:6px;letter-spacing:0.5px;text-transform:uppercase}
+.field-input{width:100%;padding:13px 14px;border-radius:10px;border:0.5px solid var(--border);font-size:16px;font-family:inherit;background:#f8fbf7;color:var(--text-primary);outline:none;margin-bottom:14px;transition:border-color .2s;-webkit-appearance:none}
+.field-input:focus{border-color:var(--voc-primary);background:white}
+select.field-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7c68' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+textarea.field-input{resize:vertical;min-height:80px}
+.btn-primary{width:100%;padding:15px;border-radius:12px;background:var(--voc-primary);color:white;border:none;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;transition:opacity .15s}
+.btn-primary:active{opacity:0.8}.btn-primary:disabled{opacity:0.6;cursor:not-allowed}
+.btn-secondary{width:100%;padding:13px;border-radius:12px;background:var(--voc-pale);color:var(--voc-primary);border:0.5px solid var(--voc-light);font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;margin-top:10px}
+.error-msg{background:#fff3f3;border:0.5px solid #ffcccc;border-radius:8px;padding:10px 14px;font-size:13px;color:#c62828;margin-bottom:14px;display:none}
+.error-msg.show{display:block}
+#app-screen{display:none;flex-direction:column;min-height:100vh}
+#app-screen.active{display:flex}
+.app-header{background:var(--voc-dark);padding:14px 20px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.header-icon{width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center}
+.tab-nav{background:var(--white);border-bottom:0.5px solid var(--border);display:flex;padding:0 16px;flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.tab-nav::-webkit-scrollbar{display:none}
+.tab-btn{padding:12px 12px;border:none;background:none;cursor:pointer;font-size:13px;font-family:inherit;border-bottom:2px solid transparent;margin-bottom:-0.5px;color:var(--text-secondary);font-weight:500;white-space:nowrap}
+.tab-btn.active{color:var(--voc-primary);border-bottom-color:var(--voc-primary);font-weight:700}
+.tab-content{flex:1;overflow-y:auto;padding:16px 20px}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.card{background:var(--white);border-radius:16px;border:0.5px solid var(--border);padding:20px;margin-bottom:12px}
+.card-title{font-size:16px;font-weight:700;color:var(--text-primary);letter-spacing:-0.3px;margin-bottom:6px}
+.card-sub{font-size:13px;color:var(--text-secondary);margin-bottom:1.25rem}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.stat-card{background:var(--white);border-radius:12px;border:0.5px solid var(--border);padding:14px}
+.stat-label{font-size:11px;color:var(--text-tertiary);margin-bottom:4px;font-weight:500}
+.stat-val{font-size:19px;font-weight:700;color:var(--text-primary);letter-spacing:-0.5px}
+.score-circle{width:80px;height:80px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
+.score-num{font-size:22px;font-weight:800;line-height:1;letter-spacing:-1px}
+.score-band{font-size:10px;font-weight:600;margin-top:2px}
+.badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px}
+.badge-active{background:var(--voc-pale);color:var(--voc-primary)}
+.badge-npl{background:#ffebee;color:#c62828}
+.badge-premium{background:#e8f4ff;color:#1565c0}
+.row{padding:14px 16px;border-bottom:0.5px solid var(--border-light);display:flex;justify-content:space-between;align-items:center}
+.row:last-child{border-bottom:none}
+.row-title{font-size:14px;font-weight:600;color:var(--text-primary)}
+.row-sub{font-size:12px;color:var(--text-tertiary);margin-top:2px}
+.warn-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.warn-row{padding:13px 16px;border-bottom:0.5px solid var(--border-light);display:flex;gap:10px;align-items:flex-start}
+.warn-row:last-child{border-bottom:none}
+.powered-bar{background:var(--voc-pale);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.powered-text{font-size:12px;color:var(--voc-primary);font-weight:500}
+.loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1rem;gap:12px}
+.spinner{width:28px;height:28px;border:2.5px solid var(--border-light);border-top-color:var(--voc-primary);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:14px;color:var(--text-secondary)}
+.empty-state{text-align:center;padding:3rem 1rem}
+.empty-title{font-size:16px;font-weight:600;color:var(--text-primary);margin-bottom:6px}
+.empty-msg{font-size:14px;color:var(--text-secondary)}
+.success-card{background:var(--voc-pale);border:0.5px solid var(--voc-light);border-radius:12px;padding:16px;text-align:center;display:none;margin-bottom:16px}
+.success-card.show{display:block}
+.success-title{font-size:15px;font-weight:700;color:var(--voc-dark);margin-bottom:4px}
+.success-msg{font-size:13px;color:var(--voc-primary)}
+.enquiry-result{background:var(--white);border-radius:16px;border:0.5px solid var(--border);overflow:hidden;margin-top:16px;display:none}
+.enquiry-result.show{display:block}
+.score-header{background:var(--voc-dark);padding:20px;display:flex;align-items:center;gap:16px}
+.comp-track{height:5px;background:rgba(255,255,255,0.2);border-radius:3px;overflow:hidden;margin-top:5px}
+.comp-fill{height:100%;border-radius:3px;background:rgba(255,255,255,0.8)}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:16px}
+.info-label{font-size:11px;color:var(--text-tertiary);margin-bottom:2px;font-weight:500}
+.info-val{font-size:13px;font-weight:600;color:var(--text-primary)}
+.section-label{font-size:11px;font-weight:700;color:var(--text-tertiary);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:12px}
+.npl-highlight{background:#ffebee;border-radius:12px;padding:13px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen" class="screen active">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+    <div style="width:54px;height:54px;border-radius:14px;background:var(--voc-dark);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+        <path d="M5 25 C5 25 10 16 17 11 C21 8 26 7 26 7 C26 7 25 11 22 15 C18 19 11 22 5 25Z" fill="white" opacity="0.9"/>
+        <path d="M5 25 C9 21 14 17 20 13" stroke="white" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.55"/>
+      </svg>
+    </div>
+    <div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:1.8px;color:var(--voc-light);text-transform:uppercase">Vocado Intelligence</div>
+      <div style="font-size:22px;font-weight:800;color:var(--text-primary);letter-spacing:-0.8px">CRI Portal</div>
+    </div>
+  </div>
+  <div style="font-size:14px;color:var(--text-secondary);margin-bottom:2rem">Credit Reference Intelligence · Lender Access</div>
+
+  <div class="login-card">
+    <div style="font-size:18px;font-weight:700;color:var(--text-primary);margin-bottom:1.5rem">Lender Sign In</div>
+    <div class="error-msg" id="login-error"></div>
+    <label class="field-label">Lender Code</label>
+    <input class="field-input" id="inp-code" type="text" placeholder="SS-ZM-XXXXXX" autocomplete="username"/>
+    <label class="field-label">Password</label>
+    <input class="field-input" id="inp-pass" type="password" placeholder="••••••••" autocomplete="current-password"/>
+    <button class="btn-primary" id="login-btn" onclick="handleLogin()">Sign In</button>
+    <div style="text-align:center;margin-top:14px">
+      <span style="font-size:13px;color:var(--text-tertiary)">Demo: SS-ZM-624283 · any password</span>
+    </div>
+  </div>
+
+  <div style="margin-top:1.5rem;display:flex;align-items:center;gap:6px;opacity:0.65">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 21 C3 21 9 13 15 9 C19 6 23 5 23 5 C23 5 22 9 19 13 C15 17 9 19 3 21Z" fill="#4A6741"/></svg>
+    <span style="font-size:11px;color:var(--voc-primary);font-weight:600">Vocado Intelligence · Authorised Lenders Only · BOZ Regulated</span>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen" class="screen">
+  <div class="app-header">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="header-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M3 21 C3 21 8 14 14 10 C18 7 22 6 22 6 C22 6 21 10 18 14 C14 18 8 20 3 21Z" fill="white" opacity="0.9"/>
+          <path d="M3 21 C7 17 12 13 18 10" stroke="white" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.5"/>
+        </svg>
+      </div>
+      <div>
+        <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,0.55);text-transform:uppercase">Vocado CRI</div>
+        <div style="font-size:16px;font-weight:800;color:white;letter-spacing:-0.4px" id="hdr-lender-name">CRI Portal</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div style="text-align:right">
+        <div style="font-size:11px;color:rgba(255,255,255,0.55)" id="hdr-lender-code">—</div>
+        <div id="hdr-tier-badge"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('dashboard')">Dashboard</button>
+    <button class="tab-btn" onclick="switchTab('enquire')">Enquire</button>
+    <button class="tab-btn" onclick="switchTab('submit')">Submit Data</button>
+    <button class="tab-btn" onclick="switchTab('portfolio')">Portfolio</button>
+    <button class="tab-btn" onclick="switchTab('warnings')">Warnings</button>
+  </div>
+
+  <div class="tab-content">
+    <div class="tab-panel active" id="panel-dashboard"><div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading dashboard...</div></div></div>
+    <div class="tab-panel" id="panel-enquire"></div>
+    <div class="tab-panel" id="panel-submit"></div>
+    <div class="tab-panel" id="panel-portfolio"><div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading portfolio...</div></div></div>
+    <div class="tab-panel" id="panel-warnings"><div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading warnings...</div></div></div>
+  </div>
+</div>
+
+<script>
+const API='https://smartscore-api.azurewebsites.net/api/v1';
+const DEMO_USER='admin',DEMO_PASS='SmartAdmin@2025';
+
+let STATE={token:null,lender:null,portfolio:null,warnings:[]};
+
+const $=id=>document.getElementById(id);
+const zmw=n=>`ZMW ${Number(n||0).toLocaleString('en-ZM',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+const fmtDate=d=>d?new Date(d).toLocaleDateString('en-ZM',{day:'numeric',month:'short',year:'numeric'}):'—';
+const fmtDateShort=d=>d?new Date(d).toLocaleDateString('en-ZM',{day:'numeric',month:'short'}):'—';
+
+const BAND_COLOR={Excellent:'#2e7d32',Good:'#4A6741',Fair:'#e65100',Poor:'#c62828','Very Poor':'#b71c1c'};
+const leafSVG=(sz=18,col='white')=>`<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none"><path d="M3 21 C3 21 8 14 14 10 C18 7 22 6 22 6 C22 6 21 10 18 14 C14 18 8 20 3 21Z" fill="${col}" opacity="0.9"/><path d="M3 21 C7 17 12 13 18 10" stroke="${col}" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.5"/></svg>`;
+
+async function apiFetch(path,opts={}){
+  const h={'Content-Type':'application/json'};
+  if(STATE.token)h['Authorization']=`Bearer ${STATE.token}`;
+  const r=await fetch(`${API}${path}`,{...opts,headers:{...h,...(opts.headers||{})}});
+  if(!r.ok)throw new Error(`${r.status}`);
+  return r.json();
+}
+
+async function handleLogin(){
+  const code=$('inp-code').value.trim().toUpperCase();
+  const pass=$('inp-pass').value.trim();
+  const btn=$('login-btn');
+  const errEl=$('login-error');
+  errEl.classList.remove('show');
+  if(!code){showErr('Please enter your lender code.');return;}
+  if(!pass){showErr('Please enter your password.');return;}
+  btn.textContent='Signing in...';btn.disabled=true;
+  try{
+    const loginRes=await fetch(`${API}/auth/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:DEMO_USER,password:DEMO_PASS})});
+    if(!loginRes.ok)throw new Error('auth');
+    STATE.token=(await loginRes.json()).token;
+    // Get portfolio to confirm lender exists (lender_id=1 for demo)
+    STATE.lender={lender_id:1,lender_code:code,lender_name:'Azure Financial Services',tier_code:'PREMIUM'};
+    $('hdr-lender-name').textContent=STATE.lender.lender_name;
+    $('hdr-lender-code').textContent=code;
+    $('hdr-tier-badge').innerHTML=`<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(255,255,255,0.15);color:white">${STATE.lender.tier_code}</span>`;
+    $('login-screen').classList.remove('active');
+    $('login-screen').style.display='none';
+    $('app-screen').style.display='flex';
+    $('app-screen').classList.add('active');
+    await loadAll();
+  }catch(e){
+    showErr('Connection error. Please try again.');
+    btn.textContent='Sign In';btn.disabled=false;
+  }
+}
+
+function showErr(msg){const el=$('login-error');el.textContent=msg;el.classList.add('show');}
+
+async function loadAll(){
+  await Promise.all([loadDashboard(),loadPortfolio(),loadWarnings()]);
+  renderEnquire();
+  renderSubmit();
+}
+
+async function loadDashboard(){
+  try{
+    const[portRes,warnRes]=await Promise.all([
+      apiFetch(`/lenders/${STATE.lender.lender_id}/portfolio`),
+      apiFetch(`/lenders/${STATE.lender.lender_id}/warnings`),
+    ]);
+    STATE.portfolio=portRes.data?.portfolio||{};
+    STATE.warnings=warnRes.data||[];
+    renderDashboard();
+  }catch(e){$('panel-dashboard').innerHTML=`<div class="empty-state"><div class="empty-title">Unable to load</div><div class="empty-msg">Please try again.</div></div>`;}
+}
+
+async function loadPortfolio(){
+  try{
+    const res=await apiFetch(`/lenders/${STATE.lender.lender_id}/portfolio`);
+    STATE.portfolio=res.data?.portfolio||{};
+    renderPortfolio();
+  }catch(e){}
+}
+
+async function loadWarnings(){
+  try{
+    const res=await apiFetch(`/lenders/${STATE.lender.lender_id}/warnings`);
+    STATE.warnings=res.data||[];
+    renderWarnings();
+  }catch(e){}
+}
+
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
+    b.classList.toggle('active',['dashboard','enquire','submit','portfolio','warnings'][i]===tab);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  $(`panel-${tab}`).classList.add('active');
+}
+
+function renderDashboard(){
+  const p=STATE.portfolio;
+  const w=STATE.warnings;
+  const nplRate=parseFloat(p.npl_rate_pct||0);
+  const wColors={critical:{bg:'#fff0f0',bc:'#ffcccc',dot:'#c62828',tc:'#c62828'},high:{bg:'#fff5f0',bc:'#ffd0b3',dot:'#e65100',tc:'#e65100'},medium:{bg:'#fffbf0',bc:'#ffe0b2',dot:'#f57c00',tc:'#f57c00'},low:{bg:'#f0f5ff',bc:'#b3c8ff',dot:'#1565c0',tc:'#1565c0'}};
+
+  $('panel-dashboard').innerHTML=`
+  <!-- Welcome -->
+  <div class="card" style="background:var(--voc-dark);border-color:var(--voc-dark)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      ${leafSVG(20,'white')}
+      <div style="font-size:15px;font-weight:700;color:white">Welcome back</div>
+    </div>
+    <div style="font-size:22px;font-weight:800;color:white;letter-spacing:-0.5px;margin-bottom:4px">${STATE.lender.lender_name}</div>
+    <div style="font-size:13px;color:rgba(255,255,255,0.6)">${STATE.lender.lender_code} · ${STATE.lender.tier_code} tier · CRI Access</div>
+  </div>
+
+  <!-- Portfolio snapshot -->
+  <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:10px">Portfolio snapshot</div>
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-label">Total accounts</div><div class="stat-val">${p.total_accounts||0}</div></div>
+    <div class="stat-card"><div class="stat-label">Unique borrowers</div><div class="stat-val">${p.unique_borrowers||0}</div></div>
+    <div class="stat-card"><div class="stat-label">Total disbursed</div><div style="font-size:13px;font-weight:700;color:var(--text-primary);margin-top:2px">${zmw(p.total_disbursed_zmw)}</div></div>
+    <div class="stat-card"><div class="stat-label">Outstanding</div><div style="font-size:13px;font-weight:700;color:var(--text-primary);margin-top:2px">${zmw(p.total_outstanding_zmw)}</div></div>
+  </div>
+
+  <!-- NPL -->
+  ${nplRate>0?`
+  <div class="npl-highlight">
+    <div>
+      <div style="font-size:13px;font-weight:700;color:#c62828">NPL Exposure</div>
+      <div style="font-size:12px;color:#e57373;margin-top:2px">${zmw(p.npl_portfolio_zmw)} at risk</div>
+    </div>
+    <div style="font-size:20px;font-weight:800;color:#c62828">${nplRate}%</div>
+  </div>`:`
+  <div style="background:var(--voc-pale);border-radius:12px;padding:13px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:13px;color:var(--voc-primary);font-weight:500">NPL Rate</span>
+    <span style="font-size:16px;font-weight:800;color:var(--voc-primary)">0.00%</span>
+  </div>`}
+
+  <!-- Active warnings -->
+  <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:10px">Active warnings (${w.length})</div>
+  ${w.length===0?`
+  <div style="background:var(--voc-pale);border-radius:12px;padding:16px;text-align:center">
+    <div style="font-size:14px;color:var(--voc-primary);font-weight:500">No active warnings</div>
+    <div style="font-size:12px;color:var(--text-tertiary);margin-top:4px">Your portfolio is clean</div>
+  </div>`:
+  w.slice(0,3).map(warn=>{const wb=wColors[warn.severity]||wColors.low;return`
+  <div style="background:${wb.bg};border:0.5px solid ${wb.bc};border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;gap:10px">
+    <div style="width:9px;height:9px;border-radius:50%;background:${wb.dot};flex-shrink:0;margin-top:3px"></div>
+    <div>
+      <div style="font-size:12px;font-weight:700;color:${wb.tc};text-transform:capitalize">${(warn.warning_type||'').replace(/_/g,' ')}</div>
+      <div style="font-size:12px;color:var(--text-secondary);margin-top:2px">${warn.consumer_name||''} · ${fmtDateShort(warn.triggered_at)}</div>
+    </div>
+  </div>`;}).join('')}
+  ${w.length>3?`<div style="text-align:center;padding:8px"><span style="font-size:13px;color:var(--voc-primary);cursor:pointer;font-weight:500" onclick="switchTab('warnings')">View all ${w.length} warnings →</span></div>`:''}
+
+  <div class="powered-bar">${leafSVG(16,'#4A6741')}<span class="powered-text">Credit Reference Intelligence · Powered by Vocado Intelligence</span></div>`;
+}
+
+function renderEnquire(){
+  $('panel-enquire').innerHTML=`
+  <div class="card">
+    <div class="card-title">Consumer Enquiry</div>
+    <div class="card-sub">Search a consumer by NRC to get their SmartScore and credit profile.</div>
+    <div class="success-card" id="enq-success"></div>
+    <label class="field-label">NRC Number</label>
+    <input class="field-input" id="enq-nrc" type="text" placeholder="123456/78/9"/>
+    <label class="field-label">Enquiry purpose</label>
+    <select class="field-input" id="enq-type">
+      <option value="credit_application">Credit application</option>
+      <option value="pre_qualification">Pre-qualification</option>
+      <option value="account_review">Account review</option>
+    </select>
+    <label class="field-label">Loan amount requested (ZMW)</label>
+    <input class="field-input" id="enq-amount" type="number" placeholder="0.00"/>
+    <button class="btn-primary" id="enq-btn" onclick="doEnquiry()">Search Consumer</button>
+  </div>
+  <div class="enquiry-result" id="enq-result"></div>`;
+}
+
+async function doEnquiry(){
+  const nrc=$('enq-nrc').value.trim();
+  const type=$('enq-type').value;
+  const amount=$('enq-amount').value;
+  const btn=$('enq-btn');
+  if(!nrc){alert('Please enter an NRC number.');return;}
+  btn.textContent='Searching...';btn.disabled=true;
+  $('enq-result').classList.remove('show');
+  try{
+    const res=await apiFetch(`/lenders/${STATE.lender.lender_id}/enquire/${encodeURIComponent(nrc)}?enquiry_type=${type}&amount_requested=${amount||0}`);
+    const d=res.data;
+    const col=BAND_COLOR[d.score_band]||'#4A6741';
+    const comps=d.score_components||{};
+
+    $('enq-result').innerHTML=`
+    <div class="score-header">
+      <div style="width:76px;height:76px;border-radius:50%;border:3px solid rgba(255,255,255,0.3);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
+        <div style="font-size:26px;font-weight:800;color:white;line-height:1;letter-spacing:-1px">${d.smartscore}</div>
+        <div style="font-size:9px;color:rgba(255,255,255,0.6);margin-top:1px">/ 850</div>
+      </div>
+      <div style="flex:1">
+        <div style="font-size:18px;font-weight:800;color:white;letter-spacing:-0.4px">${d.nrc_number}</div>
+        <div style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.8);margin-top:2px">${d.score_band} Credit</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:4px">${d.verification_status} · Enquiry #${d.enquiry_id}</div>
+      </div>
+    </div>
+    ${Object.keys(comps).length?`
+    <div style="padding:16px;border-bottom:0.5px solid var(--border-light)">
+      <div class="section-label">Score components</div>
+      ${Object.entries(comps).map(([k,v])=>{
+        const score=typeof v==='object'?v.score:v;
+        const c=score>=80?'#2e7d32':score>=60?'#4A6741':score>=40?'#e65100':'#c62828';
+        return`<div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:12px;color:var(--text-secondary);text-transform:capitalize">${k}</span>
+            <span style="font-size:12px;font-weight:700;color:var(--text-primary)">${score}/100</span>
+          </div>
+          <div style="height:4px;background:var(--border-light);border-radius:2px;overflow:hidden">
+            <div style="height:100%;width:${score}%;background:${c};border-radius:2px"></div>
+          </div>
+        </div>`;}).join('')}
+    </div>`:''}
+    ${d.behaviour?`
+    <div style="padding:16px;border-bottom:0.5px solid var(--border-light)">
+      <div class="section-label">Payment behaviour</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div><div class="info-label">On time</div><div class="info-val" style="color:#2e7d32">${d.behaviour.on_time||0}</div></div>
+        <div><div class="info-label">Late</div><div class="info-val" style="color:#e65100">${d.behaviour.late||0}</div></div>
+        <div><div class="info-label">Missed</div><div class="info-val" style="color:#c62828">${d.behaviour.missed||0}</div></div>
+        <div><div class="info-label">Avg days late</div><div class="info-val">${d.behaviour.avg_days_late?Number(d.behaviour.avg_days_late).toFixed(1):'0'}</div></div>
+      </div>
+    </div>`:''}
+    ${d.capacity?`
+    <div style="padding:16px;border-bottom:0.5px solid var(--border-light)">
+      <div class="section-label">Capacity estimate</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div><div class="info-label">Max repayment</div><div class="info-val">${zmw(d.capacity.max_affordable_repayment)}</div></div>
+        <div><div class="info-label">Max loan</div><div class="info-val">${zmw(d.capacity.max_recommended_loan)}</div></div>
+        <div><div class="info-label">Over-indebted</div><div class="info-val" style="color:${d.capacity.is_over_indebted?'#c62828':'#2e7d32'}">${d.capacity.is_over_indebted?'Yes':'No'}</div></div>
+        <div><div class="info-label">Disposable income</div><div class="info-val">${zmw(d.capacity.disposable_income)}</div></div>
+      </div>
+    </div>`:''}
+    <div style="padding:12px 16px;background:var(--voc-pale);display:flex;align-items:center;gap:8px">
+      ${leafSVG(14,'#4A6741')}
+      <span style="font-size:11px;color:var(--voc-primary);font-weight:500">Enquiry logged · ${fmtDate(d.enquiry_timestamp)}</span>
+    </div>`;
+    $('enq-result').classList.add('show');
+  }catch(e){
+    alert(e.message==='404'?'Consumer not found. Please check the NRC number.':'Enquiry failed. Please try again.');
+  }
+  btn.textContent='Search Consumer';btn.disabled=false;
+}
+
+function renderSubmit(){
+  $('panel-submit').innerHTML=`
+  <!-- Submit Account -->
+  <div class="card">
+    <div class="card-title">Submit Credit Account</div>
+    <div class="card-sub">Report a new or updated credit facility for a consumer.</div>
+    <div class="success-card" id="acc-success">
+      <div class="success-title" id="acc-success-title">Account submitted</div>
+      <div class="success-msg" id="acc-success-msg">Score recalculated successfully.</div>
+    </div>
+    <label class="field-label">Consumer NRC</label>
+    <input class="field-input" id="acc-nrc" type="text" placeholder="123456/78/9"/>
+    <label class="field-label">Account reference</label>
+    <input class="field-input" id="acc-ref" type="text" placeholder="AFS-2024-001"/>
+    <label class="field-label">Product type</label>
+    <select class="field-input" id="acc-product">
+      <option value="PERSONAL_LOAN">Personal Loan</option>
+      <option value="SALARY_ADVANCE">Salary Advance</option>
+      <option value="BUSINESS_LOAN">Business Loan</option>
+      <option value="MORTGAGE">Mortgage</option>
+      <option value="MICRO_LOAN">Micro Loan</option>
+      <option value="OVERDRAFT">Overdraft</option>
+      <option value="HIRE_PURCHASE">Hire Purchase</option>
+    </select>
+    <label class="field-label">Principal amount (ZMW)</label>
+    <input class="field-input" id="acc-principal" type="number" placeholder="0.00"/>
+    <label class="field-label">Outstanding balance (ZMW)</label>
+    <input class="field-input" id="acc-outstanding" type="number" placeholder="0.00"/>
+    <label class="field-label">Interest rate p.a. (%)</label>
+    <input class="field-input" id="acc-rate" type="number" placeholder="48"/>
+    <label class="field-label">Term (months)</label>
+    <input class="field-input" id="acc-term" type="number" placeholder="12"/>
+    <label class="field-label">Disbursement date</label>
+    <input class="field-input" id="acc-disb" type="date"/>
+    <label class="field-label">Arrears days</label>
+    <input class="field-input" id="acc-arrdays" type="number" placeholder="0"/>
+    <button class="btn-primary" id="acc-btn" onclick="submitAccount()">Submit Account</button>
+  </div>
+
+  <!-- Submit Repayment -->
+  <div class="card">
+    <div class="card-title">Submit Repayment</div>
+    <div class="card-sub">Record a payment against an existing account.</div>
+    <div class="success-card" id="rep-success">
+      <div class="success-title">Repayment submitted</div>
+      <div class="success-msg">Consumer score has been recalculated.</div>
+    </div>
+    <label class="field-label">Account reference</label>
+    <input class="field-input" id="rep-ref" type="text" placeholder="AFS-2024-001"/>
+    <label class="field-label">Due date</label>
+    <input class="field-input" id="rep-due" type="date"/>
+    <label class="field-label">Due amount (ZMW)</label>
+    <input class="field-input" id="rep-due-amt" type="number" placeholder="0.00"/>
+    <label class="field-label">Paid date</label>
+    <input class="field-input" id="rep-paid-date" type="date"/>
+    <label class="field-label">Paid amount (ZMW)</label>
+    <input class="field-input" id="rep-paid-amt" type="number" placeholder="0.00"/>
+    <label class="field-label">Payment status</label>
+    <select class="field-input" id="rep-status">
+      <option value="paid_on_time">Paid on time</option>
+      <option value="paid_late">Paid late</option>
+      <option value="partial">Partial payment</option>
+      <option value="missed">Missed</option>
+    </select>
+    <button class="btn-primary" id="rep-btn" onclick="submitRepayment()">Submit Repayment</button>
+  </div>`;
+}
+
+async function submitAccount(){
+  const btn=$('acc-btn');
+  const body={
+    consumer_nrc:$('acc-nrc').value.trim(),
+    account_reference:$('acc-ref').value.trim(),
+    product_type_code:$('acc-product').value,
+    original_principal:parseFloat($('acc-principal').value)||0,
+    outstanding_balance:parseFloat($('acc-outstanding').value)||0,
+    interest_rate_pa:parseFloat($('acc-rate').value)||0,
+    term_months:parseInt($('acc-term').value)||12,
+    disbursement_date:$('acc-disb').value,
+    arrears_days:parseInt($('acc-arrdays').value)||0,
+    account_status:'active',
+    repayment_frequency:'monthly',
+  };
+  if(!body.consumer_nrc||!body.account_reference||!body.disbursement_date){alert('Please fill in NRC, account reference and disbursement date.');return;}
+  btn.textContent='Submitting...';btn.disabled=true;
+  try{
+    const res=await apiFetch(`/lenders/${STATE.lender.lender_id}/accounts`,{method:'POST',body:JSON.stringify(body)});
+    const s=$('acc-success');
+    $('acc-success-title').textContent=res.data?.action==='updated'?'Account updated':'Account submitted';
+    $('acc-success-msg').textContent=`New SmartScore: ${res.data?.new_smartscore||'—'} (${res.data?.score_band||'—'})`;
+    s.classList.add('show');
+    await loadDashboard();
+  }catch(e){alert('Submission failed. Please check the NRC is registered.');}
+  btn.textContent='Submit Account';btn.disabled=false;
+}
+
+async function submitRepayment(){
+  const btn=$('rep-btn');
+  const repayments=[{
+    account_reference:$('rep-ref').value.trim(),
+    due_date:$('rep-due').value,
+    due_amount:parseFloat($('rep-due-amt').value)||0,
+    paid_date:$('rep-paid-date').value||null,
+    paid_amount:parseFloat($('rep-paid-amt').value)||0,
+    payment_status:$('rep-status').value,
+  }];
+  if(!repayments[0].account_reference||!repayments[0].due_date){alert('Please fill in account reference and due date.');return;}
+  btn.textContent='Submitting...';btn.disabled=true;
+  try{
+    await apiFetch(`/lenders/${STATE.lender.lender_id}/repayments`,{method:'POST',body:JSON.stringify({repayments})});
+    $('rep-success').classList.add('show');
+    $('rep-ref').value='';$('rep-due').value='';$('rep-due-amt').value='';$('rep-paid-date').value='';$('rep-paid-amt').value='';
+  }catch(e){alert('Submission failed. Please check the account reference.');}
+  btn.textContent='Submit Repayment';btn.disabled=false;
+}
+
+function renderPortfolio(){
+  const p=STATE.portfolio;
+  const nplRate=parseFloat(p.npl_rate_pct||0);
+  $('panel-portfolio').innerHTML=`
+  <div class="card">
+    <div class="card-title">Portfolio Health</div>
+    <div class="card-sub">${STATE.lender.lender_name} · ${fmtDate(new Date().toISOString())}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+      <div><div class="info-label">Total accounts</div><div style="font-size:22px;font-weight:800;color:var(--text-primary)">${p.total_accounts||0}</div></div>
+      <div><div class="info-label">Unique borrowers</div><div style="font-size:22px;font-weight:800;color:var(--text-primary)">${p.unique_borrowers||0}</div></div>
+    </div>
+    <div style="border-top:0.5px solid var(--border-light);padding-top:16px">
+      ${[
+        {label:'Total disbursed',val:zmw(p.total_disbursed_zmw)},
+        {label:'Total outstanding',val:zmw(p.total_outstanding_zmw)},
+        {label:'Total arrears',val:zmw(p.total_arrears_zmw),danger:(p.total_arrears_zmw||0)>0},
+        {label:'NPL portfolio',val:zmw(p.npl_portfolio_zmw),danger:(p.npl_portfolio_zmw||0)>0},
+      ].map(r=>`
+      <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--border-light)">
+        <span style="font-size:13px;color:var(--text-secondary)">${r.label}</span>
+        <span style="font-size:13px;font-weight:700;color:${r.danger?'#c62828':'var(--text-primary)'}">${r.val}</span>
+      </div>`).join('')}
+      <div style="display:flex;justify-content:space-between;padding:12px 0">
+        <span style="font-size:14px;font-weight:700;color:var(--text-primary)">NPL Rate</span>
+        <span style="font-size:18px;font-weight:800;color:${nplRate>5?'#c62828':nplRate>2?'#e65100':'#2e7d32'}">${nplRate.toFixed(2)}%</span>
+      </div>
+    </div>
+  </div>
+  <div style="background:white;border-radius:12px;border:0.5px solid var(--border);padding:13px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:13px;color:var(--text-secondary)">BOZ NPL threshold</span>
+    <span style="font-size:13px;font-weight:700;color:${nplRate>5?'#c62828':'#2e7d32'}">${nplRate>5?'⚠ Breached':'✓ Within limits'}</span>
+  </div>
+  <div class="powered-bar">${leafSVG(16,'#4A6741')}<span class="powered-text">Portfolio data is real-time · Vocado Intelligence CRI</span></div>`;
+}
+
+function renderWarnings(){
+  const w=STATE.warnings;
+  const wColors={critical:{bg:'#fff0f0',bc:'#ffcccc',dot:'#c62828',tc:'#c62828',sbg:'#ffebee'},high:{bg:'#fff5f0',bc:'#ffd0b3',dot:'#e65100',tc:'#e65100',sbg:'#fff3e0'},medium:{bg:'#fffbf0',bc:'#ffe0b2',dot:'#f57c00',tc:'#f57c00',sbg:'#fff8e1'},low:{bg:'#f0f5ff',bc:'#b3c8ff',dot:'#1565c0',tc:'#1565c0',sbg:'#e8f0ff'}};
+  if(!w.length){
+    $('panel-warnings').innerHTML=`
+    <div class="card" style="text-align:center;padding:2.5rem">
+      ${leafSVG(36,'#4A6741')}
+      <div style="font-size:16px;font-weight:700;color:var(--text-primary);margin-top:14px">No active warnings</div>
+      <div style="font-size:14px;color:var(--text-secondary);margin-top:6px">Your portfolio has no alerts at this time.</div>
+    </div>
+    <div class="powered-bar">${leafSVG(16,'#4A6741')}<span class="powered-text">Early warnings powered by Vocado Intelligence</span></div>`;
+    return;
+  }
+  $('panel-warnings').innerHTML=`
+  <div style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">${w.length} active warning${w.length!==1?'s':''} on your portfolio</div>
+  <div style="background:white;border-radius:16px;border:0.5px solid var(--border);overflow:hidden;margin-bottom:12px">
+    ${w.map(warn=>{
+      const wb=wColors[warn.severity]||wColors.low;
+      return`<div class="warn-row" style="background:${wb.bg};border-bottom-color:${wb.bc}">
+        <div style="width:9px;height:9px;border-radius:50%;background:${wb.dot};flex-shrink:0;margin-top:4px"></div>
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+            <div style="font-size:13px;font-weight:700;color:${wb.tc};text-transform:capitalize">${(warn.warning_type||'').replace(/_/g,' ')}</div>
+            <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:${wb.sbg};color:${wb.tc};flex-shrink:0;margin-left:8px">${warn.severity}</span>
+          </div>
+          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:4px">${warn.warning_message||''}</div>
+          <div style="font-size:11px;color:var(--text-tertiary)">${warn.consumer_name||''} · ${fmtDate(warn.triggered_at)}</div>
+        </div>
+      </div>`;}).join('')}
+  </div>
+  <div class="powered-bar">${leafSVG(16,'#4A6741')}<span class="powered-text">Proactive early warning system · Vocado Intelligence CRI</span></div>`;
+}
+
+$('inp-pass').addEventListener('keydown',e=>{if(e.key==='Enter')handleLogin();});
+$('inp-code').addEventListener('keydown',e=>{if(e.key==='Enter')$('inp-pass').focus();});
+</script>
+</body>
+</html>
