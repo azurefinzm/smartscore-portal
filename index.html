@@ -264,7 +264,7 @@ async function handleLogin(){
     const loginRes=await fetch(`${API}/auth/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:DEMO_USER,password:DEMO_PASS})});
     if(!loginRes.ok)throw new Error('auth');
     STATE.token=(await loginRes.json()).token;
-    const cRes=await apiFetch(`/consumers/nrc/${encodeURIComponent(nrc)}`);
+    const cRes=await apiFetch(`/consumers/lookup?nrc=${encodeURIComponent(nrc)}`);
     if(!cRes.success||!cRes.data)throw new Error('not_found');
     STATE.consumer=cRes.data;
     const init=`${STATE.consumer.first_name[0]}${STATE.consumer.last_name[0]}`;
