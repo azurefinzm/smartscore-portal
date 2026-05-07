@@ -237,7 +237,6 @@ function renderOverview(){
   const scoreBand=avgScore>=750?'Excellent':avgScore>=650?'Good':avgScore>=550?'Fair':avgScore>=400?'Poor':'Very Poor';
 
   $('panel-overview').innerHTML=`
-  <!-- KPI banner -->
   <div class="kpi-card">
     <div class="kpi-item"><div class="kpi-label">Consumers</div><div class="kpi-val">${s.total_consumers||0}</div><div class="kpi-sub">${s.verified_consumers||0} verified</div></div>
     <div class="kpi-item"><div class="kpi-label">Active lenders</div><div class="kpi-val">${s.active_lenders||0}</div><div class="kpi-sub">on platform</div></div>
@@ -245,7 +244,6 @@ function renderOverview(){
     <div class="kpi-item"><div class="kpi-label">Avg SmartScore</div><div class="kpi-val" style="color:${scoreColor}">${avgScore}</div><div class="kpi-sub" style="color:rgba(255,255,255,0.4)">${scoreBand}</div></div>
   </div>
 
-  <!-- Financials -->
   <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:10px">Platform financials</div>
   <div class="card" style="padding:0;overflow:hidden">
     ${[
@@ -260,7 +258,6 @@ function renderOverview(){
     </div>`).join('')}
   </div>
 
-  <!-- Quick actions -->
   <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:10px">Quick actions</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
     <button onclick="switchTab('onboard')" style="background:white;border:0.5px solid var(--border);border-radius:12px;padding:14px;text-align:left;cursor:pointer;font-family:inherit">
@@ -288,9 +285,7 @@ function renderLenders(){
   const lenders=STATE.lenders||[];
   const market=STATE.regulatory?.market_overview||[];
   if(!lenders.length){$('panel-lenders').innerHTML='<div class="loading-text" style="padding:2rem;text-align:center">No lenders found.</div>';return;}
-
   const tierBadge=t=>t==='PREMIUM'?'badge-premium':t==='STANDARD'?'badge-standard':'badge-basic';
-
   $('panel-lenders').innerHTML=`
   <div style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">${lenders.length} lender${lenders.length!==1?'s':''} on the platform</div>
   <div class="card" style="padding:0;overflow:hidden">
@@ -338,6 +333,8 @@ function renderOnboard(){
       <option value="STANDARD">Standard — + Behaviour analytics + Alerts</option>
       <option value="PREMIUM">Premium — + Predictions + Capacity + Full access</option>
     </select>
+    <label class="field-label">Registration number</label>
+    <input class="field-input" id="ob-regno" type="text" placeholder="PACRA-2024-XXXXX"/>
     <label class="field-label">BOZ licence number</label>
     <input class="field-input" id="ob-boz" type="text" placeholder="BOZ-MFI-2024-XXX"/>
     <label class="field-label">Contact email</label>
@@ -358,6 +355,7 @@ async function onboardLender(){
       lender_name:name,
       lender_type:$('ob-type').value,
       tier_code:$('ob-tier').value,
+      registration_number:$('ob-regno').value||null,
       boz_licence_number:$('ob-boz').value||null,
       contact_email:$('ob-email').value||null,
       contact_phone:$('ob-phone').value||null,
@@ -368,7 +366,7 @@ async function onboardLender(){
     $('ob-success').classList.add('show');
     $('ob-api-key').innerHTML=`<div style="font-size:10px;color:#8FA882;margin-bottom:6px;letter-spacing:0.5px;text-transform:uppercase">API Key — Save this now. It will not be shown again.</div><div style="color:#34c759;font-size:14px;letter-spacing:1px">${d.api_key}</div>`;
     $('ob-api-key').classList.add('show');
-    $('ob-name').value='';$('ob-boz').value='';$('ob-email').value='';$('ob-phone').value='';
+    $('ob-name').value='';$('ob-regno').value='';$('ob-boz').value='';$('ob-email').value='';$('ob-phone').value='';
     await loadLenders();
   }catch(e){alert('Onboarding failed. Please try again.');}
   btn.textContent='Onboard Lender';btn.disabled=false;
@@ -512,12 +510,10 @@ function renderRegulatory(){
   const reg=STATE.regulatory||{};
   const npl=reg.npl_summary||{};
   const market=reg.market_overview||[];
-  const lenders=reg.lenders||[];
 
   $('panel-regulatory').innerHTML=`
   <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:10px">BOZ Regulatory Overview</div>
 
-  <!-- NPL Summary -->
   <div class="card">
     <div class="card-title">Market NPL Summary</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px">
@@ -533,7 +529,6 @@ function renderRegulatory(){
     </div>
   </div>
 
-  <!-- Lender performance -->
   <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:10px">Lender performance</div>
   <div class="card" style="padding:0;overflow:hidden">
     ${market.length===0?`<div style="padding:20px;text-align:center;color:var(--text-tertiary)">No lender data available</div>`:
